@@ -1,5 +1,6 @@
 include RSpec
-require 'byebug'
+# byebug is a CLI debugger for Ruby
+# require 'byebug'
 
 def dual_pivot_quicksort(array)
     # setup a result array

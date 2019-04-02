@@ -1,119 +1,119 @@
 include RSpec
+require 'byebug'
 
 def dual_pivot_quicksort(array)
     # setup a result array
     result = recursive_dual_pivot_quicksort(array, 0, array.length - 1)
-
-    
+    # byebug # debug breakpoint
     # output result
     return result
 end
 
 # define recursive method
-def recursive_dual_pivot_quicksort(array, left_position, right_position)
-    # handle two element array but comparing values and reutning
-    if array.length == 2 and array[left_position] < array[right_position]
-        # two element array already sorted
-        return array
-    else
-        # two element array with high then low
-        # swap and continue recursion
-        array = swap_positions(array, left_position, right_position)
+# we take in the array to be sorted/partitioned and the indexes where
+# we want to sort them by left index starts as 0 and right is 
+# one less than the length of the array because indexing starts with 0
+def recursive_dual_pivot_quicksort(array, left_index, right_index)
+    # verification we have valid starting indexes
+    if left_index < right_index
+        # partition and retrive new indexes 
+        # new indexes will be used on the three
+        # partitions that are created using the partition method
+        left_pivot_index, right_pivot_index = partition(array, left_index, right_index)
+        # byebug # debug breakpoint
+        # recurse (is that a word?) on each of the
+        # three sections we've divided the array into
+        # instead of the default 0 and array.length - 1
+        # we use the pivot indexes gained from partition()
+        recursive_dual_pivot_quicksort(array, left_index, left_pivot_index - 1)
+        # byebug # debug breakpoint
+        recursive_dual_pivot_quicksort(array, left_pivot_index + 1, right_pivot_index -1)
+        # byebug # debug breakpoint
+        recursive_dual_pivot_quicksort(array, right_pivot_index + 1, right_index)
+        # output result of sorting
+        # byebug # debug breakpoint
         return array
     end
-
-    if left_position >= right_position
-        return array
-    end
-
-    # break array into thirds
-    # set pivot positions
-    pivot_position_1 = array.length / 3
-    pivot_position_2 = pivot_position_1 * 2
-
-    # select first third as first pivot
-    pivot_value_1 = array[pivot_position_1]
-    # double it to get to two thirds
-    pivot_value_2 = array[pivot_position_2]
-
-    # check if pivot elements need to be swapped
-    if array[pivot_value_1] > array[pivot_value_2]
-        array = swap_positions(array, pivot_value_1, pivot_value_2)
-    end
-
-    # partition the array into thirds
-    # return back new indexes based on partitioning
-    pivot_index_1, pivot_index_2 = partition(array, left_position, right_position, pivot_value_1, pivot_value_2, pivot_position_1, pivot_position_2)
-    
-    # use these new partition points to recursively sort again on those chunks
-    array = recursive_dual_pivot_quicksort(array, left_position, pivot_index_1 - 1)
-    array = recursive_dual_pivot_quicksort(array, pivot_index_1, pivot_index_2 - 1)
-    array = recursive_dual_pivot_quicksort(array, pivot_index_2, right_position)
+    # return the array we didn't sort
+    # this should mean it's too small to sort 
+    # or we received bad method parameters.
     return array
 end
 
-def partition(array, left_position, right_position, pivot_value_1, pivot_value_2, pivot_position_1, pivot_position_2)
-    center_position = pivot_position_1 + 1
-    while left_position <= pivot_position_1 and center_position <= right_position
-        # on each loop, check for nil in each value
-        nil_check(array[left_position])
-        nil_check(array[center_position])
-        nil_check(array[right_position])
-
-        # see if left position value is less than left pivot
-        # also make sure we don't move left position into center parition
-        while array[left_position] < pivot_value_1 and left_position <= pivot_position_1
-            left_position += 1
-        end
-        # make sure we're higher than pivot 1 value
-        # but lower than pivot 2 value
-        # move center position to meet right position
-        while array[center_position] > pivot_value_1 and array[center_position] < pivot_value_2
-            center_position += 1
-        end
-
-        while array[right_position] > pivot_value_2
-            right_position -= 1
-        end
-
-        # compare and swap
-        # left and center comparison
-        if array[left_position] > pivot_value_1 and array[center_position] < pivot_position_1
-            array = swap_positions(array, left_position, center_position)
-            # don't move beyond pivot position 1
-            if left_position < pivot_position_1
-                left_position += 1
-            end
-        end
-        # center and right comparison
-        if array[center_position] > pivot_value_2 and array[right_position] < pivot_value_2 and array[right_position] > pivot_value_1
-            array = swap_positions(array, center_position, right_position)
-            center_position += 1
-            right_position -= 1
-        end
-        # left and right comparison
-        if array[left_position] > pivot_value_2 and array[right_position] < pivot_value_1
-            array = swap_positions(array, left_position, right_position)
-            # limit left to pivot position 1
-            if left_position < pivot_position_1
-                left_position += 1
-            end
-            right_position -= 1
-        end
+def partition(array, left_index, right_index)
+    # check initial two values and sort them
+    if array[left_index] > array[right_index]
+        # swap returns two values that we assigned back to input values
+        array[left_index], array[right_index] = array[right_index], array[left_index]
     end
-    # return new dividing points for array
-    return left_position, center_position
-end
+    # create a far left reference index to use within comparison loop
+    left_reference = left_index + 1
+    # create a far right reference index to use within comparison loop
+    right_reference = right_index - 1
+    # create a "moving" reference that will move every iteration of the loop
+    # and then be used in most comparisons to shift values according to pivot values
+    moving_reference = left_index + 1
+    # grap the values of both left and right indexes
+    # to be used for comparisons as we "move" through the array
+    left_pivot_value = array[left_index]
+    right_pivot_value = array[right_index]
+    # "move" through array until you meet or beat right limite/reference
+    while moving_reference <= right_reference
+        # validate all referenced values against nil
+        nil_check(array[left_reference])
+        nil_check(array[right_reference])
+        nil_check(array[moving_reference])
 
-# method to swap two positions within array
-def swap_positions(array, position_1, position_2)
-    # hold values to swap in variables before assigning them within the array
-    value1 = array[position_1]
-    value2 = array[position_2]
-    array[position_1] = value2
-    array[position_2] = value1
-    # give back the array with updated positions
-    return array
+        # see if moving reference is less than left
+        if array[moving_reference] < left_pivot_value
+            # swap the two values and increase the left_reference
+            # since we know that it is in a good place
+            array[moving_reference], array[left_reference] = array[left_reference], array[moving_reference]
+            left_reference += 1
+        # see if the moving reference is more or equal to our right pivot
+        # which would indicate it shouldbe partitioned in the "right" section
+        elsif array[moving_reference] >= right_pivot_value
+            # check to make sure that we don't swap out a value that should be in the 
+            # "right" partition by checking the right reference
+            # also ensure we don't move our right reference past our moving reference
+            while array[right_reference] > right_pivot_value and moving_reference < right_reference
+                # move the reference since the value indicates it's 
+                # already in the correct position
+                right_reference -= 1
+            end
+            # now that we have a value in right reference that doesn't belong
+            # or that is about to interfere with the moving reference
+            # and a moving value bigger than right pivot value
+            # we swap moving value and right ref value
+            array[moving_reference], array[right_reference] = array[right_reference], array[moving_reference]
+            # swapped right ref so decrease it for next loop
+            right_reference -= 1
+            # now that we have a new value in our moving ref
+            # because of the swap with right ref
+            # we want to check this new value to see if it belongs
+            # elsewhere. elswhere would be in the "left" partition
+            if array[moving_reference] < left_pivot_value
+                # same code as the first if statement after we entered the main
+                # while loop. swap and increment
+                array[moving_reference], array[left_reference] = array[left_reference], array[moving_reference]
+                left_reference += 1
+            end
+        end
+        # increment by one to "move" before starting next loop
+        moving_reference += 1
+    end
+    # put the references back into "pivot" position since they would be off by one
+    # during the previous while loop.
+    left_reference -= 1
+    right_reference += 1
+    # our left_index and right_index never moved because we 
+    # started our reference one off (i.e. left_reference = left_index + 1)
+    # now we swap the left reference with that initial left index
+    # putting the values in the appropriate spot in the array
+    array[left_index], array[left_reference] = array[left_reference], array[left_index]
+    array[right_index], array[right_reference] = array[right_reference], array[right_index]
+    # return new dividing points for use on the next array
+    return left_reference, right_reference
 end
 
 # ensure the array doesn't contain nil values

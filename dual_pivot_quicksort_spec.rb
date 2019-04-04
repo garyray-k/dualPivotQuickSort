@@ -40,7 +40,6 @@ describe "#dual_pivot_quicksort" do
     expect( dual_pivot_quicksort([25, 16, 3, 10, 8, 7, 17, 13, 2, 18, 15, 21, 12, 22, 4, 14, 23, 11, 19, 9])).to eq [25, 16, 3, 10, 8, 7, 17, 13, 2, 18, 15, 21, 12, 22, 4, 14, 23, 11, 19, 9].sort
   end
 
-  # write test for nil values
   it "raises" do
     expect { dual_pivot_quicksort([1, 2, 4, 2, 4, 1, nil, 0, 49, 3]) }.to raise_error(RuntimeError)
   end
